@@ -1,4 +1,4 @@
-import {Comment, Devvit} from "@devvit/public-api";
+import {Devvit} from "@devvit/public-api";
 
 import {Scope} from "@devvit/protos";
 
@@ -23,13 +23,18 @@ Devvit.addTrigger({
             return;
         }
         if (post.title.toLowerCase() == 'tja' && flair.text == "Aus den Nachrichten") {
-            const userId = post.authorId
-            const comment = await context.reddit.submitComment({
-                id: id,
-                text: tjaSourceAsk,
-                runAs: "USER"
-            })
-            await comment.distinguish(true)
+            const body = post.selftext.toLowerCase()
+            if (body.includes("http") || body.includes("www")) {
+                const po = await context.reddit.getPostById(post.id)
+                await po.approve()
+            } else {
+                const comment = await context.reddit.submitComment({
+                    id: id,
+                    text: tjaSourceAsk,
+                    runAs: "USER"
+                })
+                await comment.distinguish(true)
+            }
         }
     }
 })
