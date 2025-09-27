@@ -7,6 +7,9 @@ Devvit.configure({
     userActions: {scopes: [Scope.SUBMIT_COMMENT]}
 });
 
+const tjaSourceAsk = 'Hallo OP, vielen Dank für deinen Beitrag. \nBitte kommentiere hier die Quelle, deines tja. Dann wird der Post auch automatisch akzeptiert.'
+const tjaSourceThere = 'Klapp\' die Antworten auf diesen Kommentar auf, um zur Quelle des tja zu kommen.'
+
 Devvit.addTrigger({
     event: "PostSubmit",
     async onEvent(event, context) {
@@ -15,16 +18,19 @@ Devvit.addTrigger({
             return;
         }
         const id = post.id;
-        if (id === undefined) {
+        const flair = post.linkFlair;
+        if (id === undefined || flair === undefined) {
             return;
         }
-        const userId = post.authorId
-        const comment = await context.reddit.submitComment({
-            id: id,
-            text: 'Hallo OP, bitte kommentiere die Quelle.',
-            runAs: "USER"
-        })
-        await comment.distinguish(true)
+        if (post.title.toLowerCase() == 'tja' && flair.text == "Aus den Nachrichten") {
+            const userId = post.authorId
+            const comment = await context.reddit.submitComment({
+                id: id,
+                text: tjaSourceAsk,
+                runAs: "USER"
+            })
+            await comment.distinguish(true)
+        }
     }
 })
 
@@ -40,11 +46,11 @@ Devvit.addTrigger({
             console.log("User is OP")
             if (comment.parentId.startsWith("t1_")) {
                 const botComment = await context.reddit.getCommentById(comment.parentId)
-                if (botComment.body === "Hallo OP, bitte kommentiere die Quelle.") {
+                if (botComment.body === tjaSourceAsk) {
                     await botComment.lock()
                     const po = await context.reddit.getPostById(post.id)
                     await po.approve()
-                    await botComment.edit({text: "Hier klicken um zur Quelle des Artikels zu kommen."})
+                    await botComment.edit({text: tjaSourceThere})
                 }
             }
         } else {
