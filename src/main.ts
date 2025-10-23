@@ -13,19 +13,24 @@ const tjaSourceThere = 'Klapp\' die Antworten auf diesen Kommentar auf, um zur Q
 Devvit.addTrigger({
     event: "PostSubmit",
     async onEvent(event, context) {
-        const post = event.post
-        if (post === undefined) {
+        const postV2 = event.post
+        if (postV2 === undefined) {
             return;
         }
-        const id = post.id;
-        const flair = post.linkFlair;
+        const id = postV2.id;
+        const flair = postV2.linkFlair;
         if (id === undefined || flair === undefined) {
             return;
         }
-        if (post.title.toLowerCase() == 'tja' && flair.text == "Aus den Nachrichten") {
-            const body = post.selftext.toLowerCase()
+        if (postV2.title.toLowerCase() == 'tja' && flair.text == "Aus den Nachrichten") {
+            const body = postV2.selftext.toLowerCase()
+            const post = await context.reddit.getPostById(postV2.id)
+            const comment = await post.comments.all()
+            if (comment.filter(comment => comment.authorName == "tja-tja" || comment.authorName == "AutoModerator")) {
+                return;
+            }
             if (body.includes("http") || body.includes("www")) {
-                const po = await context.reddit.getPostById(post.id)
+                const po = await context.reddit.getPostById(postV2.id)
                 await po.approve()
             } else {
                 const comment = await context.reddit.submitComment({
