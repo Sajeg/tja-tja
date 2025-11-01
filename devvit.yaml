@@ -1,1 +1,5 @@
 name: tja-tja
+permissions:
+  reddit:
+    asUser:
+      - SUBMITCOMMENT
