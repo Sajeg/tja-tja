@@ -42,7 +42,7 @@ Devvit.addTrigger({
                 const comment = await context.reddit.submitComment({
                     id: id,
                     text: tjaSourceAsk,
-                    runAs: "USER"
+                    runAs: "APP"
                 })
                 await comment.distinguish(true)
                 console.log("Asking User for Source")
