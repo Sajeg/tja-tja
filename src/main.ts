@@ -24,6 +24,15 @@ Devvit.addTrigger({
         }
         const post = await context.reddit.getPostById(postV2.id)
         const comment = await post.comments.all()
+        const body = postV2.selftext.toLowerCase()
+        if (body.includes("israel") || body.includes("gaza")) { 
+            console.log("Word filter triggered.")
+            return
+        }
+        if (!(post.url.includes("i.redd.it") || post.url.includes("imgur") || post.url.includes("ibb.co"))) {
+            console.log("No image")
+            return;
+        }
         if (comment.filter(comment => (comment.authorName == "tja-tja" || comment.authorName == "AutoModerator")).length > 0) {
             console.log(comment)
             return;
@@ -33,7 +42,6 @@ Devvit.addTrigger({
             return;
         }
         if (postV2.title.toLowerCase() == 'tja' && flair.text == "Aus den Nachrichten") {
-            const body = postV2.selftext.toLowerCase()
             if (body.includes("http") || body.includes("www")) {
                 const po = await context.reddit.getPostById(postV2.id)
                 await po.approve()
@@ -66,7 +74,12 @@ Devvit.addTrigger({
                 if (botComment.body === tjaSourceAsk) {
                     await botComment.lock()
                     const po = await context.reddit.getPostById(post.id)
-                    await po.approve()
+                    const body = comment.body.toLowerCase()
+                    if (body.includes("israel") || body.includes("gaza")) {
+                        console.log("Word filter triggered.")
+                    } else {
+                        await po.approve()
+                    }
                     await botComment.edit({text: tjaSourceThere})
                 }
             }
