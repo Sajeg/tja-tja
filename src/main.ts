@@ -33,6 +33,10 @@ Devvit.addTrigger({
             console.log("No image")
             return;
         }
+        if (body.includes("share.google")) {
+            console.log("Unseriöse Quelle")
+            return;
+        }
         if (comment.filter(comment => (comment.authorName == "tja-tja" || comment.authorName == "AutoModerator")).length > 0) {
             console.log(comment)
             return;
@@ -63,7 +67,7 @@ Devvit.addTrigger({
     event: "CommentCreate",
     async onEvent(event, context) {
         const comment = event.comment
-        const post = event.post
+        const post = await context.reddit.getPostById(comment.postId);
         if (post === undefined || comment === undefined) {
             return;
         }
